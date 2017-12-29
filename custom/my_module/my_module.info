@@ -1,0 +1,4 @@
+name = My module
+description = Google search module
+core = 7.x
+package = My Modules

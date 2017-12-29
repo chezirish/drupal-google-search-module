@@ -1,0 +1,16 @@
+.google_search {
+    width: 90%;
+    border: 2px solid black;
+    border-radius: 30px;
+    outline: none;
+}
+
+.search_submit {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: white;
+    box-shadow: aquamarine;
+    box-shadow: 3px 3px black;
+    border: 2px solid black;
+}
+

@@ -1,0 +1,146 @@
+<?php
+/**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ *
+ * @param path 
+ *   Which path of the site we're using to display help
+ * @param arg 
+ *   Array that holds the current path as returned from arg() function
+ */
+
+function my_module_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#my_module":
+      return t("google search module"); 
+      break; 
+  }
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function my_module_block_info() {
+    $blocks['google_search_form'] = array(
+      'info' => t('google search form'),
+      'status' => TRUE,
+      'region' => 'Highlighted',
+      'visibility' => BLOCK_VISIBILITY_LISTED,
+      'cache' => DRUPAL_NO_CACHE,
+      'pages' => '<front>',
+
+    );
+
+    $blocks['search_result'] = array(
+        'info' => t(' result of searching '),
+        'status' => TRUE,
+        'region' => 'Content',
+        'visibility' => BLOCK_VISIBILITY_LISTED,
+        'cache' => DRUPAL_NO_CACHE,
+        'pages' => '<front>',
+    );
+
+    return $blocks;
+}
+
+
+  /**
+ *  functions for get content. 
+ * 
+ * @return 
+ *   A result is html content.
+ */
+function get_form_contents(){
+  $result = "<div class='form__wrapper'>
+                <form action=''>
+                    <input name='q' placeholder='Поиск' class='google_search' type='text'>
+                    <button class='search_submit' type='submit'>Поиск</button>
+                </form>
+            </div>";
+
+
+  return $result;
+}
+
+function get_result_form_contents(){
+  $result = "test";
+
+
+  return $result;
+}
+
+
+
+  /**
+ * Custom content function. 
+ * 
+ * Set beginning and end dates, retrieve posts from database
+ * saved in that time period.
+ * 
+ * @return 
+ *   A result set of the targeted posts.
+ */
+function my_module_contents(){
+    //Get today's date.
+    $today = getdate();
+    //Calculate the date a week ago.
+    $start_time = mktime(0, 0, 0,$today['mon'],($today['mday'] - 7), $today['year']);
+    //Get all posts from one week ago to the present.
+    $end_time = time();
+  
+    //Use Database API to retrieve current posts.
+    $query = db_select('node', 'n')
+      ->fields('n', array('nid', 'title', 'created'))
+      ->condition('status', 1) //Published.
+      ->condition('created', array($start_time, $end_time), 'BETWEEN')
+      ->orderBy('created', 'DESC') //Most recent first.
+      ->execute(); 
+    return $query;  
+  }
+
+
+  
+  /**
+ * Implements hook_block_view().
+ * 
+ * Prepares the contents of the block.
+ */
+function my_module_block_view($delta = '') {    
+    switch ($delta) {
+      case 'google_search_form':
+        // $block['subject'] = t('google_search_form');
+
+        
+        $result = my_module_contents();
+        $items = array();
+
+        foreach ($result as $node) {
+          $items[] = array(
+            'data' => l($node->title, 'node/' . $node->nid),
+          ); 
+        }
+
+        $block['content'] = get_form_contents();
+        drupal_add_css(drupal_get_path('module', 'my_module') . '/html/search_form.css');
+        
+        // if (empty($items)) {
+        //   $block['content'] = t('No posts available.');  
+        // } 
+        // else {
+        //   // Pass data through theme function.
+        //   $block['content'] = theme('item_list', array(
+        //     'items' => $items));
+        // }
+        return $block;
+        break;
+      case 'search_result':
+        $block['content'] = get_result_form_contents();
+        drupal_add_css(drupal_get_path('module', 'my_module') . '/html/search_result.css');  
+        return $block;
+        break;
+    } 
+}
+
+
